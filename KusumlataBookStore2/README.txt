@@ -225,5 +225,3 @@ Facing an error When I am trying to run my project  . My index.cshtml data is no
 *****************Start Project Again from starting********************     2023-04-06      1940
 
 Reason of starting project again: because i am unable to see my Index.cshtml data while Clicking on Category Nav
-
-
