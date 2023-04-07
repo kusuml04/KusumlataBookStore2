@@ -1,57 +1,60 @@
-﻿using Dapper;
-using KusumlataBooks.DataAccess.Repository.IRepository.cs;
+﻿using KusumlataBooks.DataAccess.Repository.IRepository;
 using KusumlataBookStore2.DataAccess.Data;
-using Microsoft.Data.SqlClient;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
+using KusumlataBooks.DataAccess.Repository.IRepository.cs;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using Microsoft.Data.SqlClient;
+using System.Data;
+using System.Linq;
 
 namespace KusumlataBooks.DataAccess.Repository
 {
     public class SP_Call : ISP_Call
     {
+       
+        //access the database
         private readonly ApplicationDbContext _db;
-        private static string ConnectionString = "";
+        private static string ConnectionString = ""; //needed to call the stored procedures.
 
+        //constructor to open a sql connection
 
-        public SP_Call(ApplicationDbContext _db)
+        public SP_Call(ApplicationDbContext db)
         {
-            _db = _db;
-            ConnectionString = _db.Database.GetDbConnection().ConnectionString;
+            _db = db;
+            ConnectionString = db.Database.GetDbConnection().ConnectionString;
         }
+
+        //implements the ISP_Call Interface
 
         public void Dispose()
         {
             _db.Dispose();
         }
 
-        public void Execute(string procedurename, Dapper.DynamicParameters param = null)
+        public void Execute(string procedureName, DynamicParameters param = null)
         {
             using (SqlConnection sqlCon = new SqlConnection(ConnectionString))
             {
-                sqlCon.Open();
-                sqlCon.Execute(procedurename, param, commandType: System.Data.CommandType.StoredProcedure);
+                SqlCon.Open();
+                SqlCon.Execute(procedureName, param, commandType: System.Data.CommandType.StoredProcedure);
             }
         }
-
-        public IEnumerable<T> List<T>(string procedurename, Dapper.DynamicParameters param = null)
+        public IEnumerable<T> List<T>(string procedureName, DynamicParameters param = null)
         {
-            using (SqlConnection sqlCon = new SqlConnection(ConnectionString))
-            {
-                sqlCon.Open();
-                return sqlCon.Query<T>(procedurename, param, commandType: System.Data.CommandType.StoredProcedure);
-            }
+            SqlCon.Open();
+            return SqlCon.Query<T>(procedureName, param, commandType: System.Data.CommandType.StoredProcedure);
         }
 
-        public Tuple<IEnumerable<T1>, IEnumerable<T2>> List<T1, T2>(string procedurename, Dapper.DynamicParameters param = null)
+        public Tuple<IEnumerable<T1>, IEnumerable<T2>> List<T1, T2>(string procedureName, DynamicParameters param = null)
         {
             using (SqlConnection sqlCon = new SqlConnection(ConnectionString))
             {
                 sqlCon.Open();
-                var result = SqlMapper.QueryMultiple(sqlCon, procedurename, param, commandType: System.Data.CommandType.StoredProcedure);
-                var item1 = result.Read<T1>().ToList();
+                var result = SqlMapper.QueryMultiple(sqlCon, procedureName, param, commandType: System.Data.CommandType.StoredProcedure);
+                var item1 = result.Read<T1>().ToList(); //make sure to add using statement for LINQ
                 var item2 = result.Read<T2>().ToList();
 
                 if (item1 != null && item2 != null)
@@ -62,47 +65,42 @@ namespace KusumlataBooks.DataAccess.Repository
             return new Tuple<IEnumerable<T1>, IEnumerable<T2>>(new List<T1>(), new List<T2>());
         }
 
-        public T OneRecord<T>(string procedurename, Dapper.DynamicParameters param = null)
+        public T OneRecord<T>(string procedureName, DynamicParameters param = null)
         {
             using (SqlConnection sqlCon = new SqlConnection(ConnectionString))
             {
                 sqlCon.Open();
-                var value = sqlCon.Query<T>(procedurename, param, commandType: System.Data.CommandType.StoredProcedure);
+                var value = sqlCon.Query<T>(procedureName, param, commandType: System.Data.CommandType.StoredProcedure);
                 return (T)Convert.ChangeType(value.FirstOrDefault(), typeof(T));
             }
         }
-        public T Single<T>(string procedurename, Dapper.DynamicParameters param = null)
+
+        public T Single<T>(string procedureName, DynamicParameters param = null)
         {
-            using (SqlConnection sqlCon = new SqlConnection(ConnectionString))
+            using (SqlConnection SQLCon = new SqlConnection(ConnectionString))
             {
-                sqlCon.Open();
-                return (T)Convert.ChangeType(sqlCon.ExecuteScalar<T>(procedurename, param, commandType: System.Data.CommandType.StoredProcedure), typeof(T));
+                SQLCon.Open();
+                return (T)Convert.ChangeType(SQLCon.ExecuteScalar<T>(procedureName, param, commandType: System.Data.CommandType.StoredProcedure), typeof(T));
+
             }
         }
 
-        public T Single<T>(string procedurename, IRepository.cs.DynamicParameters param = null)
+        private class SqlCon
         {
-            throw new NotImplementedException();
-        }
+            internal static void Execute(string procedureName, DynamicParameters param, CommandType commandType)
+            {
+                throw new NotImplementedException();
+            }
 
-        public void Execute(string procedurename, IRepository.cs.DynamicParameters param = null)
-        {
-            throw new NotImplementedException();
-        }
+            internal static void Open()
+            {
+                throw new NotImplementedException();
+            }
 
-        public T OneRecord<T>(string procedurename, IRepository.cs.DynamicParameters param = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<T> List<T>(string procedurename, IRepository.cs.DynamicParameters param = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Tuple<IEnumerable<T1>, IEnumerable<T2>> List<T1, T2>(string procedurename, IRepository.cs.DynamicParameters param = null)
-        {
-            throw new NotImplementedException();
+            internal static IEnumerable<T> Query<T>(string procedureName, DynamicParameters param, CommandType commandType)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
